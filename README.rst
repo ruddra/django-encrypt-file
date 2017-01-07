@@ -1,12 +1,18 @@
-### Django File Encrypt
+Django File Encrypt
+~~~~~~~~~~~~~~~~~~~
 
-This package can be used to encrypt Django's in memory files to encrypt them.
+This package can be used to encrypt Django’s in memory files to encrypt
+them.
 
-### Download
+Download
+~~~~~~~~
 
-Use ``
+Use ``pip install django_encrypt_file``
 
-## Basic Usage:
+Basic Usage:
+------------
+
+::
 
     from django_encrypt_file import EncryptionService
     from django.core.files import File
@@ -19,7 +25,10 @@ Use ``
         encrypted_file = service.encrypt_file(useFile, password, extension='.enc')  # it will save readme.md.enc
         decrypt_file = service.decrypt_file(encrypted_file, password, extension='.enc') # it will remove .enc extension
 
-### Using in Views:
+Using in Views:
+~~~~~~~~~~~~~~~
+
+::
 
     from django_encrypt_file import EncryptionService, ValidationError
 
@@ -33,7 +42,8 @@ Use ``
        except ValidationError as e:
            print(e)
 
-Input file here can be any kind of Django File Object like `models.FileField` or `forms.FileFiled`.
-extension is optional if you want to store your encrypted files in another extension.
-raise_exception will throw `ValidationError` error which can be imported `from django_encrypt_file import ValidationError`
-
+Input file here can be any kind of Django File Object like
+``models.FileField`` or ``forms.FileFiled``. extension is optional if
+you want to store your encrypted files in another extension.
+raise\_exception will throw ``ValidationError`` error which can be
+imported ``from django_encrypt_file import ValidationError``

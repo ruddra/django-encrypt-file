@@ -158,4 +158,3 @@ class EncryptionService(object):
         else:
             self.errors.append(msg)
             return False
-
