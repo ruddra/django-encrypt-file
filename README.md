@@ -2,6 +2,10 @@
 
 This package can be used to encrypt Django's in memory files to encrypt them.
 
+### Download
+
+Use ``
+
 ## Basic Usage:
 
     from django_encrypt_file import EncryptionService
@@ -13,7 +17,7 @@ This package can be used to encrypt Django's in memory files to encrypt them.
     open('readme.md', 'rb') as inputfile:
         usefile = File(inputfile, name='readme.md')
         encrypted_file = service.encrypt_file(useFile, password, extension='.enc')  # it will save readme.md.enc
-        decrypt_file = service.decrypt_file(encrypted_file.name, password, extension='.enc') # it will remove .enc extension
+        decrypt_file = service.decrypt_file(encrypted_file, password, extension='.enc') # it will remove .enc extension
 
 ### Using in Views:
 
@@ -25,7 +29,7 @@ This package can be used to encrypt Django's in memory files to encrypt them.
            myfile = request.FILES.get('myfile', None)
            password = request.POST.get('password', None
            encrypted_file = EncryptionService().encrypt_file(myfile, password, extension='.enc')
-           decrypt_file = service.decrypt_file(encrypted_file.name, password, extension='.enc') # it will remove .enc extension
+           decrypt_file = service.decrypt_file(encrypted_file, password, extension='.enc') # it will remove .enc extension
        except ValidationError as e:
            print(e)
 
