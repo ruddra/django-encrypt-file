@@ -1,11 +1,32 @@
+"""
+-------------------
+Django File Encrypt
+-------------------
+
+A simple package which will encrypt in memory File objects(django.core.files.File) and decrypt them
+
+Copyright ruddra <me@ruddra.com>
+"""
 import os
+import sys
+import traceback
 from hashlib import md5
-from Crypto.Cipher import AES
-from django.core.files import File
-from django.utils.translation import ugettext_lazy as _
+try:
+    from Crypto.Cipher import AES
+except ImportError:
+    print('Require Pycrypto to use this. Install it using: pip install pycrypto==2.6.1')
+    sys.exit(0)
+try:
+    from django.core.files import File
+except ImportError:
+    print('Require Django to use this. Install it using: pip install django==1.10.4')
+    sys.exit(0)
 
-from exceptions import ValidationError
+check_version = sys.version_info[0]
 
+
+class ValidationError(Exception):
+    pass
 
 
 class EncryptionService(object):
@@ -49,6 +70,9 @@ class EncryptionService(object):
 
             return self._return_file(reopen, filename)
 
+        except TypeError:
+            return self._return_or_raise("Invalid File input. Expected Django File Object")
+
         except AttributeError:
             return self._return_or_raise('You must enter Django File Type Object: from django.core.files import File')
 
@@ -59,12 +83,16 @@ class EncryptionService(object):
             return self._return_or_raise('You must enter Django File Type Object: from django.core.files import File')
 
         except Exception as e:
-            return self._return_or_raise(str(e))
+            traceback.print_exc()
+            if sys.version_info[0] > 2:
+                return self._return_or_raise(str(e))
+            return self._return_or_raise(e.message)
 
-    def decrypt_file(self, filename, password, extension='', salt_header='', key_length=32):
+    def decrypt_file(self, file_object, password, extension='', salt_header='', key_length=32):
         try:
-            if not self._validate(filename, password):
+            if not self._validate(file_object, password):
                 return False
+            filename = file_object.name
             with open(filename, 'rb') as in_file:
                 bs = AES.block_size
                 salt = in_file.read(bs)[len(salt_header):]
@@ -76,12 +104,15 @@ class EncryptionService(object):
                     while not finished:
                         chunk, next_chunk = next_chunk, cipher.decrypt(in_file.read(1024 * bs))
                         if len(next_chunk) == 0:
-                            padding_length = chunk[-1]
-                            chunk = chunk[:-padding_length]
+                            if check_version == 2:
+                                padding_length = chunk[-1]
+                                chunk = chunk.replace(padding_length, '')
+                            else:
+                                padding_length = chunk[-1]
+                                chunk = chunk[:-padding_length]
                             finished = True
                         out_file.write(chunk)
                     out_file.close()
-
             reopen = self._open_file(filename)
             if extension:
                 base_file, ext = os.path.splitext(filename)
@@ -90,26 +121,31 @@ class EncryptionService(object):
 
             return self._return_file(reopen, filename)
 
+        except TypeError:
+            return self._return_or_raise("Invalid File input. Expected Django File Object")
+
         except AttributeError:
-            return self._return_or_raise('You must enter Django File Type Object: from django.core.files import File')
+            return self._return_or_raise('You must enter Django File Type Object')
 
         except IOError:
             return self._return_or_raise('File does not exist')
 
         except ValueError:
-            return self._return_or_raise('You must enter Django File Type Object: from django.core.files import File')
+            return self._return_or_raise('You must enter Django File Type Object')
 
         except Exception as e:
-            return self._return_or_raise(e)
+            if sys.version_info[0] > 2:
+                return self._return_or_raise(str(e))
+            return self._return_or_raise(e.message)
 
     def _open_file(self, filename):
         return open(filename, 'rb')
 
-    def _return_file(self, file, name):
-        return File(file, name)
+    def _return_file(self, filename, name):
+        return File(filename, name)
 
-    def _validate(self, filename=None, password=None):
-        if not filename:
+    def _validate(self, file_object=None, password=None):
+        if not file_object:
             return self._return_or_raise('File can not be null')
 
         if not password:
@@ -118,8 +154,8 @@ class EncryptionService(object):
 
     def _return_or_raise(self, msg):
         if self.raise_exception:
-            raise ValidationError(msg=_(msg))
+            raise ValidationError(msg)
         else:
-            self.errors.append(_(msg))
+            self.errors.append(msg)
             return False
 

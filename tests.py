@@ -1,8 +1,7 @@
 import copy
 import unittest
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django_encrypt_file import EncryptionService
-from exceptions import ValidationError
+from django_encrypt_file import EncryptionService, ValidationError
 
 
 class Test(unittest.TestCase):
@@ -16,21 +15,21 @@ class Test(unittest.TestCase):
         file_name = copy.deepcopy(self.file)
         encrypted_file = EncryptionService().encrypt_file(file_name, self.password)
         self.assertNotEqual(file_name.read(), encrypted_file.read())
-        decrypted_file = EncryptionService().decrypt_file(encrypted_file.name, self.password)
+        decrypted_file = EncryptionService().decrypt_file(encrypted_file, self.password)
         self.assertEqual(self.file.read(), decrypted_file.read())
 
     def test_encrypt_decrypt_with_extension_success(self):
         file_name = copy.deepcopy(self.file)
         encrypted_file = EncryptionService().encrypt_file(file_name, self.password, extension='.enc')
         self.assertNotEqual(file_name.read(), encrypted_file.read())
-        decrypted_file = EncryptionService().decrypt_file(encrypted_file.name, self.password, extension='.enc')
+        decrypted_file = EncryptionService().decrypt_file(encrypted_file, self.password, extension='.enc')
         self.assertEqual(self.file.read(), decrypted_file.read())
 
     def test_decrypt_with_wrong_password_fails(self):
         file_name = copy.deepcopy(self.file)
         encrypted_file = EncryptionService().encrypt_file(file_name, self.password, extension='.enc')
         self.assertNotEqual(file_name.read(), encrypted_file.read())
-        decrypted_file = EncryptionService().decrypt_file(encrypted_file.name, self.wrong_password, extension='.enc')
+        decrypted_file = EncryptionService().decrypt_file(encrypted_file, self.wrong_password, extension='.enc')
         self.assertNotEquals(self.file.read(), decrypted_file.read())
 
     def test_encrypt_decrypt_fail_without_password(self):
@@ -42,15 +41,15 @@ class Test(unittest.TestCase):
         self.assertRaises(ValidationError, EncryptionService().encrypt_file, None, self.password)
         self.assertRaises(ValidationError, EncryptionService().decrypt_file, None, self.password)
 
-    def test_enrypt_decrypt_fail_for_invalid_files(self):
+    def test_enrypt_decrypt_fail_for_invalid_file_type(self):
         self.assertRaises(ValidationError, EncryptionService().encrypt_file, self.invalid_file, self.password)
-        self.assertRaises(ValidationError, EncryptionService().decrypt_file, self.file, self.password)
+        self.assertRaises(ValidationError, EncryptionService().decrypt_file, self.invalid_file, self.password)
 
     def test_encrypt_decrypt_return_false_for_raise_exception_false_for_invalid_input(self):
         self.assertEqual(False, EncryptionService(raise_exception=False).encrypt_file(
                           self.invalid_file, self.password))
         self.assertEqual(False, EncryptionService(raise_exception=False).decrypt_file(
-                          self.file, self.password))
+                          self.invalid_file, self.password))
 
 if __name__ == '__main__':
     unittest.main()
