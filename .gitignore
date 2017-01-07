@@ -1,3 +1,5 @@
 *.pyc
 __pycache__
 .idea
+django_file_encrypt.egg-info
+django_file_encrypt.egg-info/
