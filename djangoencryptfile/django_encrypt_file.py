@@ -9,7 +9,6 @@ Copyright ruddra <me@ruddra.com>
 """
 import os
 import sys
-import traceback
 from hashlib import md5
 try:
     from Crypto.Cipher import AES
@@ -83,7 +82,6 @@ class EncryptionService(object):
             return self._return_or_raise('You must enter Django File Type Object: from django.core.files import File')
 
         except Exception as e:
-            traceback.print_exc()
             if sys.version_info[0] > 2:
                 return self._return_or_raise(str(e))
             return self._return_or_raise(e.message)
@@ -134,7 +132,7 @@ class EncryptionService(object):
             return self._return_or_raise('You must enter Django File Type Object')
 
         except Exception as e:
-            if sys.version_info[0] > 2:
+            if check_version > 2:
                 return self._return_or_raise(str(e))
             return self._return_or_raise(e.message)
 

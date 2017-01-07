@@ -4,3 +4,4 @@ __pycache__
 djangoencryptfile.egg-info
 djangoencryptfile.egg-info/
 *.pdf
+*.enc
