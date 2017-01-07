@@ -1,7 +1,7 @@
 import copy
 import unittest
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django_encrypt_file import EncryptionService, ValidationError
+from djangoencryptfile import EncryptionService, ValidationError
 
 
 class Test(unittest.TestCase):

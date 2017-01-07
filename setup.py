@@ -1,8 +1,8 @@
 from distutils.core import setup
 setup(
-  name='django_file_encrypt',
-  packages=['django_file_encrypt'],
-  version='0.2',
+  name='djangoencryptfile',
+  packages=['djangoencryptfile'],
+  version='0.3',
   description='A simple package to encrypt Django uploaded or downloading files(Django File Object)',
   author='Arnab Kumar Shil',
   author_email='me@ruddra.com',
