@@ -7,14 +7,14 @@ them.
 Download
 ~~~~~~~~
 
-Use ``pip install django_encrypt_file``
+Use ``pip install djangoencryptfile``
 
 Basic Usage:
 ------------
 
 ::
 
-    from django_encrypt_file import EncryptionService
+    from djangoencryptfile import EncryptionService
     from django.core.files import File
 
     password = '1234'
