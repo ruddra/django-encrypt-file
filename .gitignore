@@ -5,3 +5,4 @@ djangoencryptfile.egg-info
 djangoencryptfile.egg-info/
 *.pdf
 *.enc
+.pypirc
