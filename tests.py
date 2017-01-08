@@ -16,6 +16,7 @@ class Test(unittest.TestCase):
         encrypted_file = EncryptionService().encrypt_file(file_name, self.password)
         self.assertNotEqual(file_name.read(), encrypted_file.read())
         decrypted_file = EncryptionService().decrypt_file(encrypted_file, self.password)
+        print(file_name.read(), decrypted_file.read())
         self.assertEqual(self.file.read(), decrypted_file.read())
 
     def test_encrypt_decrypt_with_extension_success(self):

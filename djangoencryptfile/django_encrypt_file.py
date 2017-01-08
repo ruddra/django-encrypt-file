@@ -10,12 +10,14 @@ Copyright ruddra <me@ruddra.com>
 import os
 import sys
 from hashlib import md5
+import tempfile
 try:
     from Crypto.Cipher import AES
 except ImportError:
     print('Require Pycrypto to use this. Install it using: pip install pycrypto==2.6.1')
     sys.exit(0)
 try:
+    from django.core.files.uploadedfile import InMemoryUploadedFile, SimpleUploadedFile
     from django.core.files import File
 except ImportError:
     print('Require Django to use this. Install it using: pip install django==1.10.4')
@@ -40,107 +42,97 @@ class EncryptionService(object):
             d += d_i
         return d[:key_length], d[key_length:key_length + iv_length]
 
-    def encrypt_file(self, in_file, password, extension='', prefix='', salt_header='', key_length=32):
-        if not self._validate(in_file, password):
-            return False
-        try:
-            filename = in_file.name
-            with open(filename, 'wb') as out_file:
-                bs = AES.block_size
-                salt = os.urandom(bs - len(salt_header))
-                key, iv = self._derive_key_and_iv(password, salt, key_length, bs)
-                cipher = AES.new(key, AES.MODE_CBC, iv)
-                out_file.write(str.encode(salt_header) + salt)
-                finished = False
-                while not finished:
-                    chunk = in_file.read(1024 * bs)
-                    if len(chunk) == 0 or len(chunk) % bs != 0:
-                        padding_length = (bs - len(chunk) % bs) or bs
-                        chunk += str.encode(
-                            padding_length * chr(padding_length)
-                        )
-                        finished = True
-                    out_file.write(cipher.encrypt(chunk))
-            reopen = self._open_file(filename)
-            if extension:
-                new_filename = filename + extension
-                os.rename(filename, new_filename)
-                return self._return_file(reopen, new_filename)
-
-            return self._return_file(reopen, filename)
-
-        except TypeError:
-            return self._return_or_raise("Invalid File input. Expected Django File Object")
-
-        except AttributeError:
-            return self._return_or_raise('You must enter Django File Type Object: from django.core.files import File')
-
-        except IOError:
-            return self._return_or_raise('File does not exist')
-
-        except ValueError:
-            return self._return_or_raise('You must enter Django File Type Object: from django.core.files import File')
-
-        except Exception as e:
-            if sys.version_info[0] > 2:
-                return self._return_or_raise(str(e))
-            return self._return_or_raise(e.message)
-
-    def decrypt_file(self, file_object, password, extension='', salt_header='', key_length=32):
-        try:
-            if not self._validate(file_object, password):
+    def encrypt_file(self, in_file, password, extension='', salt_header='', key_length=32):
+        # try:
+            if not self._validate(in_file, password):
                 return False
-            filename = file_object.name
-            with open(filename, 'rb') as in_file:
-                bs = AES.block_size
-                salt = in_file.read(bs)[len(salt_header):]
-                key, iv = self._derive_key_and_iv(password, salt, key_length, bs)
-                cipher = AES.new(key, AES.MODE_CBC, iv)
-                next_chunk = b''
-                finished = False
-                with open(filename, 'wb') as out_file:
-                    while not finished:
-                        chunk, next_chunk = next_chunk, cipher.decrypt(in_file.read(1024 * bs))
-                        if len(next_chunk) == 0:
-                            if check_version == 2:
-                                padding_length = chunk[-1]
-                                chunk = chunk.replace(padding_length, '')
-                            else:
-                                padding_length = chunk[-1]
-                                chunk = chunk[:-padding_length]
-                            finished = True
-                        out_file.write(chunk)
-                    out_file.close()
-            reopen = self._open_file(filename)
-            if extension:
-                base_file, ext = os.path.splitext(filename)
-                os.rename(filename, base_file)
-                return self._return_file(reopen, base_file)
+            out_file = tempfile.TemporaryFile()
+            bs = AES.block_size
+            salt = os.urandom(bs - len(salt_header))
+            key, iv = self._derive_key_and_iv(password, salt, key_length, bs)
+            cipher = AES.new(key, AES.MODE_CBC, iv)
+            out_file.write(str.encode(salt_header) + salt)
+            finished = False
+            while not finished:
+                chunk = in_file.read(1024 * bs)
+                if len(chunk) == 0 or len(chunk) % bs != 0:
+                    padding_length = (bs - len(chunk) % bs) or bs
+                    chunk += str.encode(
+                        padding_length * chr(padding_length)
+                    )
+                    finished = True
+                out_file.write(cipher.encrypt(chunk))
+            out_file.seek(0)
+            return self._return_file(out_file, in_file.name+extension, in_file.content_type)
 
-            return self._return_file(reopen, filename)
+        # except TypeError:
+        #     return self._return_or_raise("Invalid File input. Expected Django File Object")
+        #
+        # except AttributeError:
+        #     return self._return_or_raise('You must enter Django File Type Object: from django.core.files import File')
+        #
+        # except IOError:
+        #     return self._return_or_raise('File does not exist')
+        #
+        # except ValueError:
+        #     return self._return_or_raise('You must enter Django File Type Object: from django.core.files import File')
+        #
+        # except Exception as e:
+        #     if sys.version_info[0] > 2:
+        #         return self._return_or_raise(str(e))
+        #     return self._return_or_raise(e.message)
 
-        except TypeError:
-            return self._return_or_raise("Invalid File input. Expected Django File Object")
+    def decrypt_file(self, in_file, password, extension='', salt_header='', key_length=32):
+        # try:
+            if not self._validate(in_file, password):
+                return False
 
-        except AttributeError:
-            return self._return_or_raise('You must enter Django File Type Object')
+            bs = AES.block_size
+            salt = in_file.read(bs)[len(salt_header):]
+            key, iv = self._derive_key_and_iv(password, salt, key_length, bs)
+            cipher = AES.new(key, AES.MODE_CBC, iv)
+            next_chunk = b''
+            finished = False
+            filename = in_file.name.replace(extension, '')
+            out_file = tempfile.TemporaryFile()
+            while not finished:
+                chunk, next_chunk = next_chunk, cipher.decrypt(in_file.read(1024 * bs))
+                if len(next_chunk) == 0:
+                    if check_version == 2:
+                        if len(chunk) > 0:
+                            padding_length = chunk[-1]
+                            chunk = chunk.replace(padding_length, '')
+                    else:
+                        if len(chunk)>0:
+                            padding_length = chunk[-1]
+                            chunk = chunk[:-padding_length]
+                    finished = True
+                out_file.write(chunk)
+            out_file.seek(0)
+            return self._return_file(out_file, filename, in_file.content_type)
 
-        except IOError:
-            return self._return_or_raise('File does not exist')
-
-        except ValueError:
-            return self._return_or_raise('You must enter Django File Type Object')
-
-        except Exception as e:
-            if check_version > 2:
-                return self._return_or_raise(str(e))
-            return self._return_or_raise(e.message)
+        # except TypeError:
+        #     return self._return_or_raise("Invalid File input. Expected Django File Object")
+        #
+        # except AttributeError:
+        #     return self._return_or_raise('You must enter Django File Type Object')
+        #
+        # except IOError:
+        #     return self._return_or_raise('File does not exist')
+        #
+        # except ValueError:
+        #     return self._return_or_raise('You must enter Django File Type Object')
+        #
+        # except Exception as e:
+        #     if check_version > 2:
+        #         return self._return_or_raise(str(e))
+        #     return self._return_or_raise(e.message)
 
     def _open_file(self, filename):
         return open(filename, 'rb')
 
-    def _return_file(self, filename, name):
-        return File(filename, name)
+    def _return_file(self, content, name, content_type):
+        return SimpleUploadedFile(name, content, content_type=content_type)
 
     def _validate(self, file_object=None, password=None):
         if not file_object:
