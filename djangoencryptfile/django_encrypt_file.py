@@ -11,6 +11,7 @@ import os
 import sys
 from hashlib import md5
 import tempfile
+from io import BytesIO
 try:
     from Crypto.Cipher import AES
 except ImportError:
@@ -46,7 +47,7 @@ class EncryptionService(object):
         # try:
             if not self._validate(in_file, password):
                 return False
-            out_file = tempfile.TemporaryFile()
+            out_file = BytesIO()
             bs = AES.block_size
             salt = os.urandom(bs - len(salt_header))
             key, iv = self._derive_key_and_iv(password, salt, key_length, bs)
@@ -63,7 +64,7 @@ class EncryptionService(object):
                     finished = True
                 out_file.write(cipher.encrypt(chunk))
             out_file.seek(0)
-            return self._return_file(out_file, in_file.name+extension, in_file.content_type)
+            return self._return_file(out_file, in_file.name+extension)
 
         # except TypeError:
         #     return self._return_or_raise("Invalid File input. Expected Django File Object")
@@ -103,13 +104,13 @@ class EncryptionService(object):
                             padding_length = chunk[-1]
                             chunk = chunk.replace(padding_length, '')
                     else:
-                        if len(chunk)>0:
+                        if len(chunk) > 0:
                             padding_length = chunk[-1]
                             chunk = chunk[:-padding_length]
                     finished = True
                 out_file.write(chunk)
             out_file.seek(0)
-            return self._return_file(out_file, filename, in_file.content_type)
+            return self._return_file(out_file, filename)
 
         # except TypeError:
         #     return self._return_or_raise("Invalid File input. Expected Django File Object")
@@ -131,8 +132,8 @@ class EncryptionService(object):
     def _open_file(self, filename):
         return open(filename, 'rb')
 
-    def _return_file(self, content, name, content_type):
-        return SimpleUploadedFile(name, content, content_type=content_type)
+    def _return_file(self, content, name):
+        return File(file=content, name=name)
 
     def _validate(self, file_object=None, password=None):
         if not file_object:
