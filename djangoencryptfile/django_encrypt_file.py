@@ -40,12 +40,13 @@ class EncryptionService(object):
             d += d_i
         return d[:key_length], d[key_length:key_length + iv_length]
 
-    def encrypt_file(self, in_file, password, extension='', prefix='', salt_header='', key_length=32):
+    def encrypt_file(self, in_file, password, extension='enc', salt_header='', key_length=32):
         if not self._validate(in_file, password):
             return False
         try:
-            filename = in_file.name
-            with open(filename, 'wb') as out_file:
+            infile_name = in_file.name
+            outfile_name = '{}.{}'.format(infile_name, extension)
+            with open(outfile_name, 'wb') as out_file:
                 bs = AES.block_size
                 salt = os.urandom(bs - len(salt_header))
                 key, iv = self._derive_key_and_iv(password, salt, key_length, bs)
@@ -61,13 +62,10 @@ class EncryptionService(object):
                         )
                         finished = True
                     out_file.write(cipher.encrypt(chunk))
-            reopen = self._open_file(filename)
-            if extension:
-                new_filename = filename + extension
-                os.rename(filename, new_filename)
-                return self._return_file(reopen, new_filename)
+                out_file.close()
+            reopen = self._open_file(outfile_name)
 
-            return self._return_file(reopen, filename)
+            return self._return_file(reopen, outfile_name)
 
         except TypeError:
             return self._return_or_raise("Invalid File input. Expected Django File Object")
@@ -86,11 +84,12 @@ class EncryptionService(object):
                 return self._return_or_raise(str(e))
             return self._return_or_raise(e.message)
 
-    def decrypt_file(self, file_object, password, extension='', salt_header='', key_length=32):
+    def decrypt_file(self, file_object, password, extension='enc', salt_header='', key_length=32):
         try:
             if not self._validate(file_object, password):
                 return False
             filename = file_object.name
+            outfile_name = filename.replace('.{}'.format(extension), '')
             with open(filename, 'rb') as in_file:
                 bs = AES.block_size
                 salt = in_file.read(bs)[len(salt_header):]
@@ -98,7 +97,7 @@ class EncryptionService(object):
                 cipher = AES.new(key, AES.MODE_CBC, iv)
                 next_chunk = b''
                 finished = False
-                with open(filename, 'wb') as out_file:
+                with open(outfile_name, 'wb') as out_file:
                     while not finished:
                         chunk, next_chunk = next_chunk, cipher.decrypt(in_file.read(1024 * bs))
                         if len(next_chunk) == 0:
@@ -111,13 +110,8 @@ class EncryptionService(object):
                             finished = True
                         out_file.write(chunk)
                     out_file.close()
-            reopen = self._open_file(filename)
-            if extension:
-                base_file, ext = os.path.splitext(filename)
-                os.rename(filename, base_file)
-                return self._return_file(reopen, base_file)
-
-            return self._return_file(reopen, filename)
+            reopen = self._open_file(outfile_name)
+            return self._return_file(reopen, outfile_name)
 
         except TypeError:
             return self._return_or_raise("Invalid File input. Expected Django File Object")

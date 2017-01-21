@@ -20,16 +20,16 @@ class Test(unittest.TestCase):
 
     def test_encrypt_decrypt_with_extension_success(self):
         file_name = copy.deepcopy(self.file)
-        encrypted_file = EncryptionService().encrypt_file(file_name, self.password, extension='.enc')
+        encrypted_file = EncryptionService().encrypt_file(file_name, self.password, extension='enc')
         self.assertNotEqual(file_name.read(), encrypted_file.read())
-        decrypted_file = EncryptionService().decrypt_file(encrypted_file, self.password, extension='.enc')
+        decrypted_file = EncryptionService().decrypt_file(encrypted_file, self.password, extension='enc')
         self.assertEqual(self.file.read(), decrypted_file.read())
 
     def test_decrypt_with_wrong_password_fails(self):
         file_name = copy.deepcopy(self.file)
-        encrypted_file = EncryptionService().encrypt_file(file_name, self.password, extension='.enc')
+        encrypted_file = EncryptionService().encrypt_file(file_name, self.password, extension='enc')
         self.assertNotEqual(file_name.read(), encrypted_file.read())
-        decrypted_file = EncryptionService().decrypt_file(encrypted_file, self.wrong_password, extension='.enc')
+        decrypted_file = EncryptionService().decrypt_file(encrypted_file, self.wrong_password, extension='enc')
         self.assertNotEquals(self.file.read(), decrypted_file.read())
 
     def test_encrypt_decrypt_fail_without_password(self):
