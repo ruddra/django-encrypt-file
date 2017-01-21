@@ -11,7 +11,6 @@ python:
   - "pypy3" # Pypy3 2.4.0
   - "pypy-5.3.1"
 install:
-  - pip install --upgrade pip
-  - pip install djangoencryptfile
+  - pip install https://github.com/ruddra/django-encrypt-file/tarball/0.5
   - pip install pytest
 script: pytest
