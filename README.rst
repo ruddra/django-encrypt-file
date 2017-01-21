@@ -4,6 +4,10 @@ Django File Encrypt
 
 .. |Build Status| image:: https://travis-ci.org/travis-ci/travis-web.svg?branch=master
    :target: https://travis-ci.org/travis-ci/travis-web
+|image0|
+
+.. |image0| image:: https://img.shields.io/pypi/v/djangoencryptfile.svg
+   :target: https://pypi.python.org/pypi/djangoencryptfile
 This package can be used to encrypt Django’s in memory files to encrypt
 them.
 
@@ -39,7 +43,7 @@ Using in Views:
     def some_view(request):
        try:
            myfile = request.FILES.get('myfile', None)
-           password = request.POST.get('password', None
+           password = request.POST.get('password', None)
            encrypted_file = EncryptionService().encrypt_file(myfile, password, extension='.enc')
            decrypt_file = service.decrypt_file(encrypted_file, password, extension='.enc') # it will remove .enc extension
        except ValidationError as e:
