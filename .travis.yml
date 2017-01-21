@@ -13,4 +13,4 @@ python:
 install:
   - pip install https://github.com/ruddra/django-encrypt-file/tarball/0.5
   - pip install pytest
-script: pytest
+script: make test
