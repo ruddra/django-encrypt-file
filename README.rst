@@ -13,7 +13,7 @@ them.
 
 Documentation
 ~~~~~~~~~~~~~
-Click <a href='http://ruddra.com/2017/02/25/documentation-of-django-encrypt-file/'>here</a> or go to this url: http://ruddra.com/2017/02/25/documentation-of-django-encrypt-file/
+Go to this url: http://ruddra.com/2017/02/25/documentation-of-django-encrypt-file/
 
 Download
 ~~~~~~~~
@@ -54,7 +54,6 @@ Using in Views:
            print(e)
 
 Input file here can be any kind of Django File Object like
-``models.FileField`` or ``forms.FileFiled``. extension is optional if
-you want to store your encrypted files in another extension.
+``models.FileField`` or ``forms.FileFiled``.
 raise\_exception will throw ``ValidationError`` error which can be
 imported ``from django_encrypt_file import ValidationError``
