@@ -11,6 +11,10 @@ Django File Encrypt
 This package can be used to encrypt Django’s in memory files to encrypt
 them.
 
+Documentation
+~~~~~~~~~~~~~
+Click <a href='http://ruddra.com/2017/02/25/documentation-of-django-encrypt-file/'>here</a> or go to this url: http://ruddra.com/2017/02/25/documentation-of-django-encrypt-file/
+
 Download
 ~~~~~~~~
 
@@ -29,8 +33,8 @@ Basic Usage:
 
     open('readme.md', 'rb') as inputfile:
         usefile = File(inputfile, name='readme.md')
-        encrypted_file = service.encrypt_file(useFile, password, extension='.enc')  # it will save readme.md.enc
-        decrypt_file = service.decrypt_file(encrypted_file, password, extension='.enc') # it will remove .enc extension
+        encrypted_file = service.encrypt_file(useFile, password, extension='enc')  # it will save readme.md.enc
+        decrypt_file = service.decrypt_file(encrypted_file, password, extension='enc') # it will remove .enc extension
 
 Using in Views:
 ~~~~~~~~~~~~~~~
@@ -44,8 +48,8 @@ Using in Views:
        try:
            myfile = request.FILES.get('myfile', None)
            password = request.POST.get('password', None)
-           encrypted_file = EncryptionService().encrypt_file(myfile, password, extension='.enc')
-           decrypt_file = service.decrypt_file(encrypted_file, password, extension='.enc') # it will remove .enc extension
+           encrypted_file = EncryptionService().encrypt_file(myfile, password, extension='enc')
+           decrypt_file = service.decrypt_file(encrypted_file, password, extension='enc') # it will remove .enc extension
        except ValidationError as e:
            print(e)
 
