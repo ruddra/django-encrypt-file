@@ -8,6 +8,11 @@ Django File Encrypt
 
 .. |image0| image:: https://img.shields.io/pypi/v/djangoencryptfile.svg
    :target: https://pypi.python.org/pypi/djangoencryptfile
+
+.. image:: https://landscape.io/github/ruddra/django-encrypt-file/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/ruddra/django-encrypt-file/master
+   :alt: Code Health
+   
 This package can be used to encrypt Django’s in memory files to encrypt
 them.
 
