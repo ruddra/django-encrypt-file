@@ -18,7 +18,7 @@ them.
 
 Documentation
 ~~~~~~~~~~~~~
-Go to this url: http://ruddra.com/documentation-of-django-encrypt-file/
+Go to this url: https://ruddra.com/documentation-of-django-encrypt-file/
 
 Download
 ~~~~~~~~
