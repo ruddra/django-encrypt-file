@@ -16,6 +16,10 @@ Django File Encrypt
 This package can be used to encrypt Django’s in memory files to encrypt
 them.
 
+Status
+~~~~~~
+This package is no longer maintained. So use at your own risk.
+
 Documentation
 ~~~~~~~~~~~~~
 Go to this url: https://ruddra.com/documentation-of-django-encrypt-file/
